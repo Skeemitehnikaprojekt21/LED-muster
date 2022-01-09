@@ -1,0 +1,323 @@
+#include <math.h>
+
+void setup() {
+  Serial.begin(9600);
+  int i;
+  for(i=2;i<12;i++){
+    pinMode(i, OUTPUT);
+  }
+}
+
+/* Modes:
+ * 0) 0V kustus
+ * 1) 0.5V Kõik LED-id põlevad
+ * 2) 1V Pooled põlevad, pooled mitte
+ * 3) 1.5V Kõik ükshaaval sisse, ja siis kõik kustu
+ * 4) 2V  Mõlemast äärest sisse kuni kohtuvad keskel - seejärel kõik kustu
+ * 5) 2.5V  Keskmised 2 ja äärmised LED-id põlevad, nendevahelised on kustus
+ * 6) 3V Kitt tuled
+ * 7) 3.5V tuled 1,3,5 põlevad, 2,4,6 kustus, ja vastupidi
+ * 8) 4V  Kõik tuled põlevad, siis kustus, ehk vilguvad
+ * 9) 4.5V Kõik keskelt sisse ükshaaval, siis kustu
+ * 10) 5V Vasak pool põleb, parem pool kustus ja vastupidi
+ */
+ 
+void mode0();
+void mode1(int);
+void mode2(int);
+void mode3(int);
+void mode4(int);
+void mode5(int);
+void mode6(int);
+void mode7(int);
+void mode8(int);
+void mode9(int);
+void mode10(int);
+int PWM_Level();
+
+
+int PWM_Level()
+{
+  static char sisestus[10];
+  static unsigned int positsioon = 0;
+  unsigned int sis = 0;
+  
+  Serial.print("Sisesta PWMi tase 0 ja 255 vahel \n");
+  char inByte = Serial.read();
+  if((inByte != '\n') && (positsioon < 9))
+  {
+    sisestus[positsioon] = inByte;
+    positsioon++;
+  }
+  else
+  {
+    sisestus[positsioon] = '\0';
+    Serial.println(sisestus);
+    positsioon = 0;
+  }
+  
+  sis = atoi(sisestus);
+  if(sis < 0)
+  {
+    sis = 0;
+  }
+  else if(sis > 255)
+  {
+    sis = 255;
+  }
+  return sis;
+}
+
+void mode0()
+{
+  int i;
+  for(i=2;i<8;i++)
+  {
+    digitalWrite(i, LOW);
+  }
+}
+
+void mode1(int mode)
+{
+  int i;
+  for(i=2;i<8;i++)
+  {
+    digitalWrite(i, HIGH);
+  }
+  delay(200);
+}
+
+void mode2(int mode)
+{
+  int i;
+  for(i=2;i<8;i++)
+  {
+    if(!(i%2))
+    {
+      digitalWrite(i, HIGH);
+    }
+    else
+    {
+      digitalWrite(i, LOW);
+    }
+    
+  }
+  
+  delay(200);
+}
+
+void mode3(int mode)
+{
+  mode0();
+  int i;
+  for(i=2;i<8;i++)
+  {
+    digitalWrite(i, HIGH);
+    delay(100);
+  }
+  mode0();
+  delay(100);
+}
+
+void mode4(int mode)
+{
+  mode0();
+  delay(400);
+  int i, numTot = 0, ajutine;
+  for(i=2;i<5;i++)
+  {
+    digitalWrite(i, HIGH);
+    digitalWrite((9-i), HIGH);
+    delay(150);
+  }
+  
+}
+
+void mode5(int mode)
+{
+  int i;
+  for(i=2;i<8;i++)
+  {
+    if((i == 3) || (i == 6))
+    {
+      digitalWrite(i, LOW);
+    }
+    else
+    {
+      digitalWrite(i, HIGH);
+    }
+  }
+  delay(200);
+}
+
+void mode6(int mode)
+{
+  mode0();
+  int i;
+  for(i=2;i<8;i++)
+  {
+    digitalWrite(i, HIGH);
+    delay(100);
+    digitalWrite(i, LOW);
+  }
+  for(i=7;i>1;i--)
+  {
+    digitalWrite(i, HIGH);
+    delay(100);
+    digitalWrite(i, LOW);
+  }
+  
+}
+
+void mode7(int mode)
+{
+  int i;
+  for(i=0;i<4;i++)            //vilgutab 2 korda
+  {
+    if(!(i%2))
+    {
+      digitalWrite(2, HIGH);
+      digitalWrite(3, LOW);
+      digitalWrite(4, HIGH);
+      digitalWrite(5, LOW);
+      digitalWrite(6, HIGH);
+      digitalWrite(7, LOW);
+      delay(200);
+    }
+    else if((i%2) == 1)
+    {
+      digitalWrite(2, LOW);
+      digitalWrite(3, HIGH);
+      digitalWrite(4, LOW);
+      digitalWrite(5, HIGH);
+      digitalWrite(6, LOW);
+      digitalWrite(7, HIGH);
+      delay(200);
+    }
+    
+  }
+  
+}
+
+void mode8(int mode)
+{
+  int i;
+  for(i=2;i<8;i++)
+  {
+    digitalWrite(i, HIGH);
+  }
+  delay(200);
+  for(i=2;i<8;i++)
+  {
+    digitalWrite(i, LOW);
+  }
+  delay(200);
+}
+
+void mode9(int mode)
+{
+  mode0();
+  int i;
+  delay(300);
+  for(i=0;i<3;i++)
+  {
+    digitalWrite((4-i), HIGH);
+    digitalWrite((5+i), HIGH);
+    delay(150);
+  }
+  mode0();
+}
+
+void mode10(int mode)
+{
+  int i;
+  for(i=0;i<4;i++)        //Vilgutab 2 korda
+  {
+    if(!(i%2))
+    {
+      digitalWrite(2, LOW);
+      digitalWrite(3, LOW);
+      digitalWrite(4, LOW);
+      digitalWrite(5, HIGH);
+      digitalWrite(6, HIGH);
+      digitalWrite(7, HIGH);
+      delay(200);
+    }
+    else if((i%2) == 1)
+    {
+      digitalWrite(2, HIGH);
+      digitalWrite(3, HIGH);
+      digitalWrite(4, HIGH);
+      digitalWrite(5, LOW);
+      digitalWrite(6, LOW);
+      digitalWrite(7, LOW);
+      delay(200);
+    }
+    
+  }
+  
+}
+
+int PWM = 0;
+
+void loop() {
+  int pinge, muster, i;
+
+
+/////////// PWM DAC-iga pinge juhtimine
+  /*while(Serial.available() > 0)
+  {
+    PWM = PWM_Level();
+    analogWrite(11, PWM);
+    delay(150);
+  }
+  
+  
+  analogWrite(11, PWM);
+  */
+////////////
+  
+  pinge = analogRead(0);
+  muster = map(pinge, 0, 1020, 0, 10);
+  
+  Serial.println(analogRead(0));
+  switch(muster)
+  {
+    case 0:
+    mode0();
+    break;
+    case 1:
+    mode1(muster);
+    break;
+    case 2:
+    mode2(muster);
+    break;
+    case 3:
+    mode3(muster);
+    break;
+    case 4:
+    mode4(muster);
+    break;
+    case 5:
+    mode5(muster);
+    break;
+    case 6:
+    mode6(muster);
+    break;
+    case 7:
+    mode7(muster);
+    break;
+    case 8:
+    mode8(muster);
+    break;
+    case 9:
+    mode9(muster);
+    break;
+    case 10:
+    mode10(muster);
+    break;
+    default:
+    mode0();
+  }
+  delay(100);
+}
